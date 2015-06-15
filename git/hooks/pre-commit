@@ -1,0 +1,4 @@
+#!/bin/sh
+
+ROOT="$(cd "$(dirname "$0")"/../..; pwd -P)"
+php ${ROOT}/bin/php-code-quality check-staged-files

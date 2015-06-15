@@ -1,0 +1,39 @@
+{
+	"name": "tripomatic/php-code-quality",
+	"type": "library",
+	"description": "A set of PHP code quality tools",
+	"keywords": ["php", "code", "quality"],
+	"homepage": "https://github.com/tripomatic/php-code-quality",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Jan Jakes",
+			"email": "jan@jakes.pro"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"symfony/console": "^2.7",
+		"symfony/process": "^2.7",
+		"fabpot/php-cs-fixer": "^1.8"
+	},
+	"require-dev": {
+	},
+	"autoload": {
+		"psr-4": {
+			"Tripomatic\\PhpCodeQuality\\": "src/",
+			"Symfony\\CS\\": "src-cs/"
+		}
+	},
+	"bin": ["bin/php-code-quality"],
+	"minimum-stability": "dev",
+	"extra": {
+		"branch-alias": {
+			"dev-master": "1.0-dev"
+		}
+	},
+	"scripts": {
+		"pre-install-cmd": "sh git/install-hooks.sh",
+		"pre-update-cmd": "sh git/install-hooks.sh"
+	}
+}

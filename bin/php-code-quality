@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+
+if (file_exists(__DIR__ . '/../../../autoload.php')) {
+	require_once __DIR__ . '/../../../autoload.php';
+} else {
+	require_once __DIR__ . '/../vendor/autoload.php';
+}
+
+use Symfony\Component\Console\Application;
+use Tripomatic\PhpCodeQuality\Command\CheckStagedFilesCommand;
+
+$application = new Application('Tripomatic PHP Code Quality', '1.0-dev');
+$application->add(new CheckStagedFilesCommand());
+$application->run();
