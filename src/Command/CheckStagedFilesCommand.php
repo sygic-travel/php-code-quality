@@ -138,16 +138,18 @@ class CheckStagedFilesCommand extends Command
 
 		// get list of files that are registered with PHP-CS-Fixer
 		$registeredFiles = array_map(function (\SplFileInfo $splFileInfo) {
-			return $splFileInfo->getRealPath();
+			return substr($splFileInfo->getRealPath(), strlen($this->adapter->getWorkingDirectory()) + 1);
 		}, iterator_to_array($config->getFinder()));
 
-		$checkAll = in_array('.php_cs', $staged);
+		if (in_array('.php_cs', $staged)) {
+			$staged = $registeredFiles;
+		}
 
 		$errors = [];
 		foreach ($staged as $file) {
 
 			// skip files not registered with PHP-CS-Fixer
-			if (!$checkAll && !in_array($this->adapter->getWorkingDirectory() . '/' . $file, $registeredFiles)) {
+			if (!in_array($file, $registeredFiles)) {
 				continue;
 			}
 
