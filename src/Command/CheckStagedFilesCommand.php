@@ -35,11 +35,11 @@ class CheckStagedFilesCommand extends Command
 		$output->writeln('<options=bold>PHP Code Quality:</options=bold>');
 
 		// detect repository type
-		$repositoryType = $this->detectRepositoryType();
+		list($repositoryType, $binaryPath) = $this->detectRepositoryType();
 		if ($repositoryType === self::REPOSITORY_GIT) {
-			$this->adapter = $adapter = new GitAdapter();
+			$this->adapter = $adapter = new GitAdapter($binaryPath);
 		} elseif ($repositoryType === self::REPOSITORY_MERCURIAL) {
-			$this->adapter = $adapter = new MercurialAdapter();
+			$this->adapter = $adapter = new MercurialAdapter($binaryPath);
 		} else {
 			$output->writeln('<error>This directory does not seem to be a GIT or Mercurial repository.</error>');
 			return 1;
@@ -178,25 +178,29 @@ class CheckStagedFilesCommand extends Command
 	 */
 	private function detectRepositoryType()
 	{
+		$prefixes = ['', '/usr/local/bin/', '/usr/bin/', '/bin/', '/usr/bin/', '/sbin/'];
+
 		// git
-		$processBuilder = new ProcessBuilder(['git', 'rev-parse', '--git-dir']);
-		$process = $processBuilder->getProcess();
-		$process->run();
+		foreach ($prefixes as $prefix) {
+			$processBuilder = new ProcessBuilder([$prefix . 'git', 'rev-parse', '--git-dir']);
+			$process = $processBuilder->getProcess();
+			$process->run();
 
-		if ($process->isSuccessful()) {
-			return self::REPOSITORY_GIT;
+			if ($process->isSuccessful()) {
+				return [self::REPOSITORY_GIT, $prefix . 'git'];
+			}
+
+			// mercurial
+			$processBuilder = new ProcessBuilder([$prefix . 'hg', 'root']);
+			$process = $processBuilder->getProcess();
+			$process->run();
+
+			if ($process->isSuccessful()) {
+				return [self::REPOSITORY_MERCURIAL, $prefix . 'hg'];
+			}
 		}
 
-		// mercurial
-		$processBuilder = new ProcessBuilder(['hg', 'root']);
-		$process = $processBuilder->getProcess();
-		$process->run();
-
-		if ($process->isSuccessful()) {
-			return self::REPOSITORY_MERCURIAL;
-		}
-
-		return;
+		return [null, null];
 	}
 
 	/**

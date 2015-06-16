@@ -7,25 +7,30 @@ use Symfony\Component\Process\ProcessBuilder;
 class MercurialAdapter implements AdapterInterface
 {
 	/** @var string */
+	protected $binaryPath;
+
+	/** @var string */
 	protected $root;
 
 	/** @var string[] */
 	protected $files = [];
 
-	public function __construct()
+	public function __construct($binaryPath = 'hg')
 	{
 		// get root directory
-		$processBuilder = new ProcessBuilder(['hg', 'root']);
+		$processBuilder = new ProcessBuilder([$binaryPath, 'root']);
 		$process = $processBuilder->getProcess();
 		$process->mustRun();
 		$this->root = trim($process->getOutput());
 
 		// get staged files
-		$processBuilder = new ProcessBuilder(['hg',  'status', '--added', '--modified', '--no-status']);
+		$processBuilder = new ProcessBuilder([$binaryPath,  'status', '--added', '--modified', '--no-status']);
 		$processBuilder->setWorkingDirectory($this->root);
 		$process = $processBuilder->getProcess();
 		$process->mustRun();
 		$this->files = preg_split('/\r\n?|\n/', $process->getOutput(), -1, PREG_SPLIT_NO_EMPTY);
+
+		$this->binaryPath = $binaryPath;
 	}
 
 	/**
@@ -57,7 +62,7 @@ class MercurialAdapter implements AdapterInterface
 	 */
 	public function isTracked($file)
 	{
-		$processBuilder = new ProcessBuilder(array_merge(['git',  'ls-files', $file, '--error-unmatch']));
+		$processBuilder = new ProcessBuilder([$this->binaryPath, 'locate', $file]);
 		$processBuilder->setWorkingDirectory($this->root);
 		$process = $processBuilder->getProcess();
 		$process->run();
